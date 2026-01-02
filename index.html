@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TheNumberGames.github.io</title>
+<style>
+
+
+#current-prize {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: gold;
+}
+
+
+.level-btn {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .level-btn::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 10;
+    }
+
+    .level-btn:hover::after {
+      opacity: 1;
+    }
+	.level-btn::after {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.level-btn::before {
+  content: "";
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(0,0,0,0.85) transparent transparent transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.level-btn:hover::before {
+  opacity: 1;
+}
+
+body {
+
+  background: radial-gradient(circle at center, #0b3d91, #000020 80%);
+  position: relative;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  color: #eee;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: opacity 1s ease;
+
+}
+
+  body.fade-out { opacity: 0; }
+  h1 {
+    font-weight: 900;
+    font-size: 3.5rem;
+    color: #ffd700;
+    text-shadow:
+      0 0 5px #fff,
+      0 0 10px #ffcc00,
+      0 0 15px #ff9900,
+      0 0 20px #ff6600,
+      0 0 30px #cc3300;
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-family: 'Arial Black', Gadget, sans-serif;
+    z-index: 1;
+    position: relative;
+  }
+  #top-left-buttons { position: fixed; top: 10px; left: 10px; display: flex; gap: 10px; z-index: 10; }
+  button {
+    background: linear-gradient(45deg, #0057b7, #00aaff);
+    color: white;
+    border: 2px solid #00ccff;
+    box-shadow: 0 0 5px #00ccff, 0 0 10px #00ccff inset;
+    transition: all 0.3s ease;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 10px 18px;
+    border-radius: 5px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  button:hover:not(:disabled) {
+    background: linear-gradient(45deg, #00aaff, #0057b7);
+    box-shadow: 0 0 15px #00ccff, 0 0 25px #00ccff inset;
+    color: #ffffcc;
+    transform: scale(1.05);
+  }
+  button:disabled { background: #555; color: #999; box-shadow: none; cursor: not-allowed; }
+  #game-container { margin-top: 120px; max-width: 480px; margin-left:auto; margin-right:auto; text-align:center; z-index:1; position:relative; }
+  input[type="text"], input[type="number"], input[type="password"] {
+    font-size: 1.2rem;
+    padding: 8px;
+    border-radius: 5px;
+    border: 2px solid #00ccff;
+    width: 150px;
+    text-align: center;
+  }
+  #hint { margin-top: 15px; font-size: 1.25rem; color: #ffcc00; min-height: 2em; }
+  #history { margin-top: 20px; background: #002060bb; padding: 10px; border-radius: 8px; font-family: monospace; height: 150px; overflow-y:auto; color:#fff; text-align:left; white-space: pre-wrap; }
+  #modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.8); z-index:20; }
+  .modal { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#001144; padding:25px 30px; border-radius:15px; box-shadow:0 0 20px #00ccffcc; color:#eee; font-size:1.2rem; max-width:320px; z-index:25; text-align:center; }
+  .modal h2 { margin-bottom:20px; font-family: 'Arial Black', Gadget, sans-serif; }
+  .modal button { margin:8px; min-width:90px; }
+  .modal input[type="text"], .modal input[type="password"] { font-size:1.2rem; padding:8px; margin-bottom:15px; width:80%; border-radius:5px; border:2px solid #00ccff; text-align:center; }
+  .close-btn { position:absolute; top:10px; right:10px; background:red; font-weight:bold; border-radius:50%; width:30px; height:30px; line-height:26px; font-size:18px; }
+  #main-menu { margin-top:130px; max-width:480px; margin-left:auto; margin-right:auto; text-align:center; position:relative; z-index:1; }
+  #balance-display { font-size:1.3rem; margin-bottom:15px; color:#ffd700; text-shadow:0 0 5px #ffcc00; }
+  #login-message { color:#ffcc00; min-height:1.2em; margin-top:-10px; margin-bottom:10px; }
+  canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:30; display:none; }
+  #level-modal .level-btn { min-width:100px; padding:8px 12px; }
+  #level-buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  #level-hint { color:#ffcc00; margin-top:10px; min-height:1.2em; }
+  @media(max-width:500px){
+    h1{font-size:2.5rem;}
+    #game-container, #main-menu, #level-modal{width:90%; margin-top:80px;}
+    input[type="text"]{width:100px;}
+    button{padding:8px 12px; font-size:0.9rem;}
+
+  }
+  /* --- Stack level buttons vertically --- */
+#level-buttons-container {
+  display: flex;
+  flex-direction: column;  /* stack level buttons vertically */
+  align-items: center;     /* center horizontally */
+  gap: 10px;               /* space between buttons */
+}
+ @media (min-width: 768px) and (max-width: 1366px) {
+
+    h1 {
+      font-size: 4rem; /* bigger title */
+    }
+
+    button {
+      font-size: 1.5rem;   /* bigger buttons */
+      padding: 16px 28px;
+      min-width: 150px;     /* prevent tiny buttons */
+      min-height: 50px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="password"] {
+      font-size: 1.5rem;   /* bigger input text */
+      padding: 14px;
+      width: 220px;        /* wider input boxes */
+    }
+
+    .modal {
+      font-size: 1.5rem;   /* larger modal text */
+      padding: 35px;       /* more comfortable spacing */
+      max-width: 480px;
+    }
+  }
+
+
+  
+
+</style>
+</head>
+<body>
+
+
+
+<div id="top-left-buttons">
+  <button id="home-btn">🏠</button>
+</div>
+
+<h1> MASTERMIND </h1>
+
+<div id="modal-overlay"></div>
+
+<div id="instructions-modal" class="modal">
+  <h2>Welcome to Mastermind!</h2>
+  <p>Guess the secret number. You have a limited number of guesses, the less guesses you use the more mind coins you get. Good luck! Rules: no Hack, no cheat, no copy, have fun!</p>
+  <button id="instructions-ok-btn">OK</button>
+</div>
+
+<div id="main-menu" style="display:none;">
+  <div id="balance-display"></div>
+  <button id="one-player-btn">1 Player</button>
+  <button id="two-player-btn">2 player (on same device)</button>
+</div>
+
+<div id="level-modal" class="modal" style="display:none;">
+  <span class="close-btn" id="level-close-btn"> X </span>
+  <h2>Select Level</h2>
+  <div id="level-buttons-container">
+   <button class="level-btn" data-level="easy" data-tooltip="Entry fee = $50, max prize = $100"></button>
+<button class="level-btn" data-level="medium" data-tooltip="Entry fee = $500, max prize = $1000"></button>
+<button class="level-btn" data-level="hard" data-tooltip="Entry fee = $2000, max prize = $5000"></button>
+
+  </div>
+  <div id="level-hint"></div>
+</div>
+
+<div id="player2-secret-modal" class="modal" style="display:none;">
+  <span class="close-btn" id="player2-close-btn">X</span>
+  <h2>Player 2: Enter Secret </h2>
+  <div id="secret-instruction"></div>
+  <input type="text" id="player2-secret-input" maxlength="4" placeholder="Enter secret number" />
+  <br />
+  <button id="player2-secret-submit-btn">Submit</button>
+</div>
+
+<div id="game-container" style="display:none;">
+<div id="current-prize"></div>
+  <input type="text" id="guess-input" maxlength="4" placeholder="Enter your guess" />
+  <button id="guess-btn"> Guess </button>
+  <div id="hint"></div>
+  <div id="history"></div>
+</div>
+
+<div id="result-modal" class="modal" style="display:none;">
+  <h2 id="result-title"></h2>
+  <p id="result-message"></p>
+  <button id="result-ok-btn">OK</button>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+let currentUser=null, playerBalance=600, gameMode=null, level=null, entryFee=0;
+let solution="", maxGuesses=0, guessesMade=0, history=[], player2SecretChosen=false;
+let particles=[], particleType=null;
+
+// DOM Elements
+const modalOverlay=document.getElementById('modal-overlay');
+const instructionsModal=document.getElementById('instructions-modal');
+const instructionsOkBtn=document.getElementById('instructions-ok-btn');
+
+const mainMenu=document.getElementById('main-menu');
+const balanceDisplay=document.getElementById('balance-display');
+const onePlayerBtn=document.getElementById('one-player-btn');
+const twoPlayerBtn=document.getElementById('two-player-btn');
+const homeBtn=document.getElementById('home-btn');
+
+const levelModal=document.getElementById('level-modal');
+const levelButtons=document.querySelectorAll('.level-btn');
+const levelCloseBtn=document.getElementById('level-close-btn');
+const levelHint=document.getElementById('level-hint');
+
+const player2SecretModal=document.getElementById('player2-secret-modal');
+const secretInstruction=document.getElementById('secret-instruction');
+const player2SecretInput=document.getElementById('player2-secret-input');
+const player2SecretSubmitBtn=document.getElementById('player2-secret-submit-btn');
+const player2CloseBtn=document.getElementById('player2-close-btn');
+
+const gameContainer=document.getElementById('game-container');
+const guessInput=document.getElementById('guess-input');
+const guessBtn=document.getElementById('guess-btn');
+const hintDiv=document.getElementById('hint');
+const historyDiv=document.getElementById('history');
+
+const resultModal=document.getElementById('result-modal');
+const resultTitle=document.getElementById('result-title');
+const resultMessage=document.getElementById('result-message');
+const resultOkBtn=document.getElementById('result-ok-btn');
+
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+
+// Utility Functions
+function validateSecretNumber(input,level){
+  if(!/^\d+$/.test(input)) return "Must be a number";
+  const length=input.length;
+  if(level==='easy'&&length!==2) return "Must be 2 digits";
+  if(level==='medium'&&length!==3) return "Must be 3 digits";
+  if(level==='hard'&&length!==4) return "Must be 4 digits";
+  if(input[0]==='0') return "No leading zero";
+  return true;
+}
+function validateGuess(guess,level){
+  if(!/^\d+$/.test(guess)) return "Must be a number";
+  const length=level==='easy'?2:level==='medium'?3:4;
+  if(guess.length!==length) return `Must be ${length} digits`;
+  if(guess[0]==='0') return "No leading zero";
+  return true;
+}
+function evaluateGuess(guess,solution){
+  let correctPosition=0; let correctDigitWrongPlace=0;
+  for(let i=0;i<guess.length;i++){ if(guess[i]===solution[i]) correctPosition++; }
+  let solutionCounts={}, guessCounts={};
+  for(let d of solution) solutionCounts[d]=(solutionCounts[d]||0)+1;
+  for(let d of guess) guessCounts[d]=(guessCounts[d]||0)+1;
+  let totalCorrectDigits=0;
+  for(let d in guessCounts){ if(solutionCounts[d]) totalCorrectDigits+=Math.min(guessCounts[d],solutionCounts[d]); }
+  correctDigitWrongPlace=totalCorrectDigits-correctPosition;
+  if(correctPosition===0&&correctDigitWrongPlace===0) return 'No digits correct.';
+  let parts=[]; if(correctPosition>0) parts.push(`${correctPosition} digit${correctPosition>1?'s':''} in correct place`);
+  if(correctDigitWrongPlace>0) parts.push(`${correctDigitWrongPlace} digit${correctDigitWrongPlace>1?'s':''} correct but wrong place`);
+  return parts.join(' and ');
+}
+function generateSolution(level){
+  const lengths={easy:2,medium:3,hard:4};
+  const length=lengths[level]; let digits='';
+  while(digits.length<length){ let digit=Math.floor(Math.random()*10).toString(); if(digits.length===0&&digit==='0') continue; digits+=digit; }
+  return digits;
+}
+function getMaxGuesses(level) {
+  if (level === 'easy') return 10;
+  if (level === 'medium') return 10;
+  if (level === 'hard') return 5; // Hard now only 5 tries
+}
+
+function getEntryFee(level){return level==='easy'?50:level==='medium'?500:2000;}
+function calculatePrize(level, guesses){
+  if(level==='easy') return Math.max(0,100-(guesses-1)*10);
+  if(level==='medium') return Math.max(0,1000-(guesses-1)*100);
+  if(level==='hard') return Math.max(0,5000-(guesses-1)*1000);
+}
+
+function updateCurrentPrize() {
+  const prizeDiv = document.getElementById('current-prize');
+  if (!prizeDiv) return;
+
+  // next correct guess
+  const potentialPrize = calculatePrize(level, guessesMade + 1);
+  prizeDiv.textContent = `Potential Prize: $${potentialPrize}`;
+}
+
+function updateBalanceDisplay(){ balanceDisplay.textContent=`Balance: $${playerBalance}`; }
+
+// Game Functions
+function startGame(){
+  history=[]; guessesMade=0; hintDiv.textContent=""; historyDiv.textContent="";
+  guessInput.value=""; guessInput.maxLength=solution.length; guessInput.placeholder=`Enter ${solution.length} digits`;
+  mainMenu.style.display="none"; levelModal.style.display="none"; player2SecretModal.style.display="none"; gameContainer.style.display="block";
+  guessInput.disabled=false;
+  updateCurrentPrize();
+
+}
+function resetToMainMenu(){
+  gameMode=null; level=null; solution=""; maxGuesses=0; guessesMade=0; history=[]; player2SecretChosen=false;
+  guessInput.value=""; hintDiv.textContent=""; historyDiv.textContent=""; gameContainer.style.display="none"; levelModal.style.display="none";
+  player2SecretModal.style.display="none"; mainMenu.style.display="block"; updateBalanceDisplay(); levelHint.textContent="";
+}
+
+// --- Instructions ---
+instructionsOkBtn.addEventListener('click',()=>{instructionsModal.style.display="none"; mainMenu.style.display="block"; updateBalanceDisplay();});
+
+// --- Main Menu ---
+onePlayerBtn.addEventListener('click',()=>{gameMode="1player"; showLevelModal();});
+twoPlayerBtn.addEventListener('click',()=>{gameMode="2player"; showLevelModal();});
+
+// --- Home Button ---
+homeBtn.addEventListener('click',()=>{resetToMainMenu();});
+
+// --- Level Modal ---
+function showLevelModal(){
+  levelButtons.forEach(btn=>{
+      const lvl = btn.dataset.level;
+      const fee = getEntryFee(lvl);
+      btn.textContent = `${lvl.charAt(0).toUpperCase()+lvl.slice(1)} ($${fee})`;
+  });
+  levelHint.textContent="";
+  levelModal.style.display="block"; mainMenu.style.display="none";
+}
+
+levelButtons.forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    level=btn.dataset.level;
+    entryFee=getEntryFee(level);
+    maxGuesses=getMaxGuesses(level);
+    if(playerBalance<entryFee){
+      levelHint.textContent=`Insufficient funds! Need $${entryFee}`;
+      return;
+    }
+    levelHint.textContent="";
+    if(gameMode==="1player"){
+      playerBalance-=entryFee; updateBalanceDisplay();
+      solution=generateSolution(level); startGame();
+    } else if(gameMode==="2player"){
+      player2SecretInput.value="";
+      player2SecretInput.maxLength=(level==='easy'?2:level==='medium'?3:4);
+      secretInstruction.textContent=`Enter a ${player2SecretInput.maxLength}-digit secret number (no leading zero):`;
+      player2SecretModal.style.display="block"; levelModal.style.display="none";
+    }
+  });
+});
+
+player2SecretSubmitBtn.addEventListener('click',()=>{
+  const secret=player2SecretInput.value.trim();
+  const validation = validateSecretNumber(secret,level);
+  if(validation !== true){ hintDiv.textContent = validation; return; }
+  if(playerBalance<entryFee){ hintDiv.textContent = `Insufficient funds! Need $${entryFee}`; return; }
+  solution=secret; player2SecretChosen=true;
+  playerBalance-=entryFee; updateBalanceDisplay();
+  startGame();
+});
+player2CloseBtn.addEventListener('click',()=>{player2SecretModal.style.display="none"; showLevelModal();});
+levelCloseBtn.addEventListener('click',()=>{levelModal.style.display="none"; mainMenu.style.display="block";});
+
+// --- Guessing ---
+guessBtn.addEventListener('click',()=>{
+  const guess=guessInput.value.trim();
+  if(guess===""){ hintDiv.textContent="Please enter a guess."; return; }
+  const validation = validateGuess(guess,level);
+  if(validation !== true){ hintDiv.textContent=validation; return; }
+  guessesMade++; const evalText=evaluateGuess(guess,solution);
+  history.push(`Guess ${guessesMade}: ${guess} => ${evalText}`);
+  historyDiv.textContent=history.join('\n'); hintDiv.textContent=evalText; guessInput.value="";
+  if(guess===solution){
+    const prize=calculatePrize(level,guessesMade); playerBalance+=prize; updateBalanceDisplay();
+    guessInput.disabled=true; showResult(true,prize); return;
+  }
+  updateCurrentPrize();
+
+  if(guessesMade>=maxGuesses){ guessInput.disabled=true; showResult(false,0); return; }
+});
+
+// --- Result Modal ---
+function showResult(win,prize){
+  resultModal.style.display="block";
+  resultTitle.textContent=win?"You Won!":"You Lost!";
+  resultMessage.textContent=win?`You earned $${prize}`:`Solution was ${solution}`;
+  particleType=win?"confetti":"rain";
+  startParticles();
+  
+  if (win) popMoney();
+}
+function popMoney() {
+  for (let i = 0; i < 15; i++) {
+    const money = document.createElement('div');
+    money.className = 'money';
+    money.textContent = '💸'; // money emoji!
+
+    // Random starting position near center of screen
+    money.style.left = window.innerWidth / 2 + (Math.random() * 200 - 100) + 'px';
+    money.style.top = window.innerHeight / 2 + (Math.random() * 50 - 25) + 'px';
+
+    document.body.appendChild(money);
+
+    setTimeout(() => money.remove(), 1500); // remove after animation
+  }
+}
+
+resultOkBtn.addEventListener('click',()=>{
+  stopParticles(); resultModal.style.display="none"; resetToMainMenu();
+});
+
+// --- Particle Effects ---
+function startParticles(){
+  canvas.style.display="block"; particles=[];
+  for(let i=0;i<200;i++){
+    if(particleType==="confetti"){
+      particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height/2,r:Math.random()*8+4,dx:(Math.random()-0.5)*2,dy:Math.random()*3+2,color:`hsl(${Math.random()*360},80%,60%)`});
+    } else {
+      particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+1,dy:Math.random()*4+2,color:`rgba(0,0,255,0.7)`});
+    }
+  }
+  requestAnimationFrame(particleLoop);
+}
+function particleLoop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let p of particles){
+    if(particleType==="confetti"){
+      p.x+=p.dx; p.y+=p.dy; ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.r, p.r*0.4);
+    } else {
+      p.y+=p.dy; ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.r,p.r*4);
+      if(p.y>canvas.height){ p.y=0; p.x=Math.random()*canvas.width; }
+    }
+  }
+  if(particles.length>0) requestAnimationFrame(particleLoop);
+}
+function stopParticles(){particles=[]; canvas.style.display="none";}
+
+// --- Enter key submission anywhere (Guess + Player 2 secret) ---
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault(); // prevent default behavior
+
+    // If Player 2 secret modal is open, submit that
+    if (player2SecretModal.style.display === 'block') {
+      player2SecretSubmitBtn.click();
+      return;
+    }
+
+    // If game is active, submit guess
+    if (gameContainer.style.display === 'block') {
+      guessBtn.click();
+      return;
+    }
+
+    // You can add more buttons here if needed in the future
+  }
+});
+
+
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
